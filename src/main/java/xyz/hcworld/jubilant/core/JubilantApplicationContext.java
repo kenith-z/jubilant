@@ -20,7 +20,6 @@ import xyz.hcworld.jubilant.annotation.Component;
 import xyz.hcworld.jubilant.annotation.ComponentScan;
 import xyz.hcworld.jubilant.annotation.Scope;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -80,7 +79,7 @@ public class JubilantApplicationContext {
     /**
      * 扫描
      *
-     * @param configClass
+     * @param configClass 配置类
      */
     private void scan(Class<?> configClass) {
 
@@ -110,11 +109,8 @@ public class JubilantApplicationContext {
                 String beanName = componentAnnotation.value();
                 //如果没有自定义beanName则以类名（首字母小写）为beanName
                 if (beanName.isEmpty()) {
-                    String[] name = className.split("\\.");
-                    StringBuilder nameBuffer = new StringBuilder(name[name.length - 1]);
-                    beanName = nameBuffer.replace(0, 1, Character.toString(nameBuffer.charAt(0)).toLowerCase()).toString();
+                    beanName = getDefaultClassName(className,clazz);
                 }
-
                 // bean的配置信息
                 BeanDefinition beanDefinition = new BeanDefinition();
                 beanDefinition.setClazz(clazz);
@@ -142,7 +138,7 @@ public class JubilantApplicationContext {
      * @param beanDefinition 自定义配置
      * @return bean对象
      */
-    public Object createBean(String beanName, BeanDefinition beanDefinition) {
+    public final Object createBean(String beanName, BeanDefinition beanDefinition) {
 
         Class<?> clazz = beanDefinition.getClazz();
         try {
@@ -153,11 +149,15 @@ public class JubilantApplicationContext {
                 if (!declaredField.isAnnotationPresent(Autowired.class)) {
                     continue;
                 }
-                String[] name = declaredField.getType().getName().split("\\.");
-                StringBuilder nameBuffer = new StringBuilder(name[name.length - 1]);
-                nameBuffer.replace(0, 1, Character.toString(nameBuffer.charAt(0)).toLowerCase());
+                // 获取Autowired的注解
+                String autowiredBeanName = declaredField.getDeclaredAnnotation(Autowired.class).value();
+
                 // 通过反射注入属性
-                Object bean = getBean(nameBuffer.toString());
+                Object bean = getBean(autowiredBeanName.isEmpty()?
+                        //缺省值
+                        getDefaultClassName(declaredField.getType().getName(), declaredField.getType())
+                        //Autowired的值
+                        :autowiredBeanName);
                 if (bean == null) {
                     throw new NullPointerException();
                 }
@@ -211,28 +211,24 @@ public class JubilantApplicationContext {
                 singletonObjects.get(beanName) : createBean(beanName, beanDefinition);
     }
 
+
     /**
-     * 获取文件制定包下的所有class文件（不管有多少层）
+     * 获得缺省值的Bean
      *
-     * @param file      目录
-     * @param filePaths 临时存储
-     * @return 所有class文件的绝对路径
+     * @param className 路径
+     * @return bean对象
      */
-    private Set<File> getFilePath(File file, Set<File> filePaths) {
-        File[] files = file.listFiles();
-        if (files == null || files.length == 0) {
-            return new HashSet<>();
-        }
-        for (File file1 : files) {
-            if (file1.isDirectory()) {
-                //递归调用
-                getFilePath(file1, filePaths);
-                continue;
+    public String getDefaultClassName(String className,Class<?> interfaces) {
+        String[] name = className.split("\\.");
+        StringBuilder nameBuffer = new StringBuilder(name[name.length - 1]);
+        for (Class<?> interfaceName : interfaces.getInterfaces()) {
+            String[] interfaceNames = interfaceName.getName().split("\\.");
+            StringBuilder interfaceNameBuffer = new StringBuilder(interfaceNames[interfaceNames.length - 1]);
+            if (nameBuffer.indexOf(interfaceNameBuffer.toString())>-1){
+                return interfaceNameBuffer.replace(0, 1, Character.toString(interfaceNameBuffer.charAt(0)).toLowerCase()).toString();
             }
-            //保存文件路径到集合中
-            filePaths.add(file1);
         }
-        return filePaths;
+        return nameBuffer.replace(0, 1, Character.toString(nameBuffer.charAt(0)).toLowerCase()).toString();
     }
 
 

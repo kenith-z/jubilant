@@ -1,5 +1,7 @@
 package xyz.hcworld;
 
+import xyz.hcworld.jubilant.annotation.Autowired;
+import xyz.hcworld.jubilant.annotation.Component;
 import xyz.hcworld.service.UserService;
 import xyz.hcworld.jubilant.annotation.ComponentScan;
 import xyz.hcworld.jubilant.core.JubilantApplicationContext;
@@ -24,14 +26,11 @@ public class TestApplication {
         System.out.println(applicationContext.getBean("tsService"));
         System.out.println(applicationContext.getBean("postService"));
         System.out.println(applicationContext.getBean("postService"));
+        System.out.println(applicationContext.getBean("baseService1"));
         System.out.println("------------已注册的组件-------------");
 
         UserService userService = (UserService) applicationContext.getBean("userService");
         userService.test();
-
-        String packageName = "com.wang.vo.request.hotel";
-        // List<String> classNames = getClassName(packageName);
-
 
 
 

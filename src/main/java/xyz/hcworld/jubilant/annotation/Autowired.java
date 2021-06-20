@@ -26,4 +26,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.FIELD})
 public @interface Autowired {
+
+    /**
+     * @return 组件名
+     */
+    String value() default "";
+
 }

@@ -91,7 +91,7 @@ public class Search {
                 JarEntry jarEntry = entries.nextElement();
                 String entryName = jarEntry.getName();
                 if (entryName.startsWith(jarPath) && entryName.endsWith(".class")) {
-                    entryName = entryName.replace("/", ".").substring(0, entryName.lastIndexOf("."));
+                    entryName = entryName.replace("/", ".").substring(0, entryName.lastIndexOf(".class"));
                     myClassName.add(entryName);
                 }
             }

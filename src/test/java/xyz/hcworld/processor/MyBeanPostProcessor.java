@@ -27,7 +27,11 @@ public class MyBeanPostProcessor implements BeanPostProcessor {
     public Object postProcessAfterInitialization(Object bean, String beanName) {
         if (beanName.equals("userService")) {
             System.out.printf("%s初始化后\n", beanName);
+
+
+
         }
+
         return bean;
     }
 }

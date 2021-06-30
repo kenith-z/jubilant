@@ -5,6 +5,7 @@ import xyz.hcworld.jubilant.annotation.Component;
 import xyz.hcworld.service.UserService;
 import xyz.hcworld.jubilant.annotation.ComponentScan;
 import xyz.hcworld.jubilant.core.JubilantApplicationContext;
+import xyz.hcworld.service.impl.PostService;
 
 
 /**
@@ -31,8 +32,8 @@ public class TestApplication {
 
         UserService userService = (UserService) applicationContext.getBean("userService");
         userService.test();
-
-
-
+//
+        PostService postService = (PostService) applicationContext.getBean("postService");
+        System.out.println(postService.text("aaa？",1998));
     }
 }

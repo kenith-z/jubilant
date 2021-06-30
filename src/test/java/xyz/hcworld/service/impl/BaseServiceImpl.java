@@ -18,7 +18,7 @@ public class BaseServiceImpl implements InitializingBean, BaseService {
     PostService postService;
 
     public String text(String str){
-        return str+"10086"+"\tbaseService:"+postService.text("9");
+        return str+"10086"+"\tbaseService:"+postService.text("9",1992);
     }
 
     /**

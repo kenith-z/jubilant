@@ -38,10 +38,10 @@ public class UserServiceImpl implements BeanNameAware, UserService {
 
     @Override
     public void test(){
-        System.out.println(baseService.text("baseService ")+"\t"+baseService);
+        System.out.println(baseService.text("123 ")+"\t"+baseService);
         System.out.println(baseService1.text("baseService1 ")+"\t"+baseService1);
-        System.out.println(postService.text("postService ")+"\t"+postService);
-        System.out.println(postService1.text("postService1 ")+"\t"+postService1);
+        System.out.println(postService.text("postService ",1997)+"\t"+postService);
+        System.out.println(postService1.text("postService1 ",1996)+"\t"+postService1);
         System.out.println(tsService);
 
 

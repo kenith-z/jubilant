@@ -13,7 +13,7 @@ import xyz.hcworld.jubilant.annotation.Scope;
 @Scope("prototype")
 public class PostService {
 
-    public String text(String str){
+    public String text(String str,int a){
         return str+"10010";
     }
 

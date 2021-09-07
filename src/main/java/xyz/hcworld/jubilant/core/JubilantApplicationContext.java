@@ -13,8 +13,6 @@ package xyz.hcworld.jubilant.core;
 
 
 import xyz.hcworld.jubilant.aop.Aspect;
-import xyz.hcworld.jubilant.aop.Pointcut;
-import xyz.hcworld.jubilant.aop.proxy.Proxy;
 import xyz.hcworld.jubilant.beans.BeanDefinition;
 import xyz.hcworld.jubilant.beans.BeanNameAware;
 import xyz.hcworld.jubilant.beans.BeanPostProcessor;
@@ -26,10 +24,8 @@ import xyz.hcworld.jubilant.annotation.Scope;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * 容器类
@@ -57,10 +53,7 @@ public class JubilantApplicationContext {
      * 初始化bean的类
      */
     private final List<BeanPostProcessor> beanPostProcessorList = new ArrayList<>();
-    /**
-     * 切面代理类集合
-     */
-    private final ConcurrentHashMap<String, List<String>> proxyBeanMap = new ConcurrentHashMap<>();
+
 
     /**
      * 构造方法
@@ -141,30 +134,32 @@ public class JubilantApplicationContext {
                 // 存进配置池
                 beanDefinitionMap.put(beanName, beanDefinition);
                 // 获取切面（还没想好怎么处理）
-                if (clazz.isAnnotationPresent(Aspect.class)) {
-
-                    for (Method m : clazz.getMethods()) {
-                        //没有切点的时候直接结束本轮
-                        if (!m.isAnnotationPresent(Pointcut.class)) {
-                            continue;
-                        }
-                        //获取切点路径
-                        String pointcutPath = m.getDeclaredAnnotation(Pointcut.class).value();
-                        //获取要增强的bean
-                        //当ioc路径和增强路径相同时
-                        if (path.equals(pointcutPath)) {
-                            proxyBeanMap.put(beanName, classNames);
-                            continue;
-                        }
-                        //使用流获取指定路径需要增强的类
-                        List<String> aopNames = classNames.stream()
-                                .filter(aopClassName -> aopClassName.startsWith(pointcutPath))
-                                .distinct().collect(Collectors.toList());
-                        proxyBeanMap.put(beanName, aopNames);
-                    }
-                }
+//                if (clazz.isAnnotationPresent(Aspect.class)) {
+//
+//                    for (Method m : clazz.getMethods()) {
+//                        //没有切点的时候直接结束本轮
+//                        if (!m.isAnnotationPresent(Pointcut.class)) {
+//                            continue;
+//                        }
+//                        //获取切点路径
+//                        String pointcutPath = m.getDeclaredAnnotation(Pointcut.class).value();
+//                        //获取要增强的bean
+//                        //当ioc路径和增强路径相同时
+//                        if (path.equals(pointcutPath)) {
+//                            proxyBeanMap.put(beanName, classNames);
+//                            continue;
+//                        }
+//                        //使用流获取指定路径需要增强的类
+//                        List<String> aopNames = classNames.stream()
+//                                .filter(aopClassName -> aopClassName.startsWith(pointcutPath))
+//                                .distinct().collect(Collectors.toList());
+//                        proxyBeanMap.put(beanName, aopNames);
+//                    }
+//                }
                 // 将实现BeanPostProcessor（初始化bean）接口的类存到初始化配置池中
-                if (BeanPostProcessor.class.isAssignableFrom(clazz)) {
+
+                if (clazz.isAnnotationPresent(Aspect.class)
+                        &&BeanPostProcessor.class.isAssignableFrom(clazz)) {
                     BeanPostProcessor beanPostProcessor = (BeanPostProcessor) createBean(beanName, beanDefinitionMap.get(beanName));
                     beanPostProcessorList.add(beanPostProcessor);
                 }
@@ -214,19 +209,12 @@ public class JubilantApplicationContext {
             if (instance instanceof BeanNameAware) {
                 ((BeanNameAware) instance).setBeanName(beanName);
             }
+            System.out.println(beanPostProcessorList);
             //初始化前的增强
-//            for (BeanPostProcessor beanPostProcessor : beanPostProcessorList) {
-//                instance = beanPostProcessor.postProcessBeforeInitialization(instance, beanName);
-//            }
-
-            //AOP增强
-            for (Map.Entry<String, List<String>> entry : proxyBeanMap.entrySet()) {
-                for (String name : entry.getValue()) {
-                    if (name.equals(clazz.getName())) {
-                        instance = Proxy.getProxyInstance(instance,singletonObjects.get(entry.getKey()));
-                    }
-                }
+            for (BeanPostProcessor beanPostProcessor : beanPostProcessorList) {
+                instance = beanPostProcessor.postProcessBeforeInitialization(instance, beanName);
             }
+
 
 
             // 初始化

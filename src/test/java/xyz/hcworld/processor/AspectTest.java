@@ -3,7 +3,9 @@ package xyz.hcworld.processor;
 
 import xyz.hcworld.jubilant.annotation.Component;
 import xyz.hcworld.jubilant.aop.*;
+import xyz.hcworld.jubilant.aop.proxy.MyBeanPostProcessor;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.StringJoiner;
 
@@ -18,73 +20,22 @@ import java.util.StringJoiner;
  */
 @Aspect
 @Component
-public class AspectTest {
+public class AspectTest extends MyBeanPostProcessor {
 
-    /**
-     *  若@Pointcut("xyz.hcworld.service.impl")则拦截xyz.hcworld.service.impl的所有类
-     * 若@Pointcut("xyz.hcworld.service.impl.BaseServiceImpl")则拦截xyz.hcworld.service.impl.BaseServiceImpl类
-     *
-     */
-    @Pointcut("xyz.hcworld.service.impl")
-    public void log(String str) {
-        System.out.println("经过AOP的log方法（单参）");
-    }
-    @Pointcut("xyz.hcworld.service.impl")
-    public void log() {
-        System.out.println("经过AOP的log方法（无参）");
-    }
-    @Pointcut("xyz.hcworld.service.impl")
-    public void log(String str, int a) {
-        System.out.println("经过AOP的log方法（双参）");
+    @Override
+    public void before(Method method, Object[] params)  {
+        System.out.println("前置增强1");
+        System.out.println(method.toString());
+        System.out.println(Arrays.asList(params));
     }
 
-    /**
-     * 前置增强
-     */
-    @Before()
-    public void doBefore(String str, int a) {
+    @Override
+    public void after(Method method, Object[] params) {
 
-        System.out.println("经过AOP的前置增强方法（双参）" + str + a);
-    }
-    @Before()
-    public void doBefore() {
-
-        System.out.println("经过AOP的前置增强方法（无参）");
-    }
-    /**
-     * 只增强有一个参数的类
-     * @param str
-     */
-    @Before()
-    public void doBefore(String str) {
-
-        System.out.println("经过AOP的前置增强方法（单参数）" + str);
-    }
-    /**
-     * 后置增强
-     */
-    @After()
-    public void doAfter() {
-        System.out.println("经过AOP的后置增强方法");
     }
 
-    /**
-     * 环绕增强
-     */
-    @Around()
-    public void doAround() {
-        System.out.println("经过AOP的环绕增强方法");
-    }
+    @Override
+    public void end(Method method, Object[] params) {
 
-    /**
-     * 拦截最后返回
-     *
-     * @param result 返回结果
-     */
-    @AfterReturning
-    public String doAfterReturn(String result) {
-        System.out.println("拦截" + result);
-        result = "re";
-        return result;
     }
 }
